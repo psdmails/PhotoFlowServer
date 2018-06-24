@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+
+    <Button
+        android:id="@+id/loadPhotos"
+        android:text="Get All Pics"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!--while loading-->
+    <RelativeLayout
+        android:id="@+id/progress_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone">
+        <com.nipunbirla.boxloader.BoxLoaderView
+            android:id="@+id/progress"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:strokeColor="#995876"
+            app:loaderColor="#C67890"
+            app:strokeWidth="20"
+            app:speed="10"/>
+        <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/progress"
+            android:layout_margin="5dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#000"
+            android:text="Loading..."/>
+    </RelativeLayout>
+
+    <!--the grid view-->
+    <GridView
+        android:id="@+id/grid_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:numColumns="auto_fit"
+        android:columnWidth="90dp"
+        android:horizontalSpacing="10dp"
+        android:verticalSpacing="10dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+    <ImageView
+        android:id="@+id/full_img"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</RelativeLayout>
