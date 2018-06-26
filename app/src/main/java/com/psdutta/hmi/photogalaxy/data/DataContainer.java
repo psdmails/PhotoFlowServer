@@ -3,7 +3,8 @@ package com.psdutta.hmi.photogalaxy.data;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.provider.ContactsContract;
+import android.util.ArrayMap;
+import android.util.Base64;
 import android.util.Log;
 
 import com.psdutta.hmi.photogalaxy.connection.IClientConnection;
@@ -11,8 +12,9 @@ import com.psdutta.hmi.photogalaxy.event.IOnEventReceived;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class DataContainer   {
+public class DataContainer {
     private static final String TAG = DataContainer.class.getSimpleName();
     private static final Object LOCK_OBJECT = new Object();
     private static final int MSG_ALL_THUMBNAILS = 1000;
@@ -22,7 +24,7 @@ public class DataContainer   {
     private List<IOnEventReceived> mIOnEventReceivedList = new ArrayList<>();
     private IClientConnection mIClientConnection;
     private final List<ReceivedPacket> mThumbnailList = new ArrayList<>();
-    private final List<ReceivedPacket> mActualImageList = new ArrayList<>();
+    private final Map<String, ReceivedPacket> mActualImageMap = new ArrayMap<>();
     private Handler mHandler;
     private String mIpAddress;
 
@@ -49,10 +51,25 @@ public class DataContainer   {
         return mDataContainer;
     }
 
-    public ReceivedPacket getSelectedThumbnail(int index){
+    public ReceivedPacket getSelectedThumbnail(int index) {
         synchronized (mThumbnailList) {
             return mThumbnailList.get(index);
         }
+    }
+
+    public ReceivedPacket getSelectedPacket(String filePath) {
+        int index = mThumbnailList.indexOf(new ReceivedPacket(filePath, ""));
+        if (index != -1) {
+            return mThumbnailList.get(index);
+        }
+        return null;
+    }
+
+    public ReceivedPacket getActualPacket(String filePath) {
+        byte[] pathBytes =  Base64.decode(filePath, Base64.DEFAULT);
+        String path = new String(pathBytes).trim();
+        Log.d("PPPP", "Fetching cached: " + path);
+        return mActualImageMap.get(path);
     }
 
     public void setThumbnailList(List<ReceivedPacket> list) {
@@ -74,6 +91,7 @@ public class DataContainer   {
             mIOnEventReceivedList.add(listener);
         }
     }
+
     public void unregisterEventListener(IOnEventReceived listener) {
         mIOnEventReceivedList.remove(listener);
     }
@@ -100,19 +118,18 @@ public class DataContainer   {
                         if (list != null) {
                             mThumbnailList.addAll(list);
                             Log.d(TAG, "handleMessage() called with:  list data: ");
-                            for (int i = 0, n=mThumbnailList.size(); i <n ; i++) {
-                                Log.d(TAG, "item count: " + i +" getFilePath: " + mThumbnailList
+                            for (int i = 0, n = mThumbnailList.size(); i < n; i++) {
+                                Log.d(TAG, "item count: " + i + " getFilePath: " + mThumbnailList
                                         .get(i)
                                         .getFilePath() + "  \n \n and encoded bitmap: "
-                                        +mThumbnailList.get(i)
-                                        .getEncodedBitmap() );
+                                        + mThumbnailList.get(i)
+                                        .getEncodedBitmap());
                             }
-                        }
-                        else {
+                        } else {
                             Log.d(TAG, "handleMessage() called with:list == null");
                         }
-                        if(mIOnEventReceivedList != null){
-                            for (IOnEventReceived listener: mIOnEventReceivedList) {
+                        if (mIOnEventReceivedList != null) {
+                            for (IOnEventReceived listener : mIOnEventReceivedList) {
                                 listener.onThumbnailListReceived(list);
                             }
                         }
@@ -122,19 +139,23 @@ public class DataContainer   {
                 case MSG_SELECTED_IMAGE:
                     //todo ps
                     ReceivedPacket packet = (ReceivedPacket) message.obj;
-                    if (packet != null) {mActualImageList.add(packet);
+                    if (packet != null) {
+                        byte[] pathBytes =  Base64.decode(packet.getFilePath(), Base64.DEFAULT);
+                        String path = new String(pathBytes).trim();
+                        Log.d("PPPP", "Adding actual: " + path);
+                        mActualImageMap.put(path, packet);
                     }
 
-                    if(mIOnEventReceivedList != null){
-                        for (IOnEventReceived listener: mIOnEventReceivedList) {
+                    if (mIOnEventReceivedList != null) {
+                        for (IOnEventReceived listener : mIOnEventReceivedList) {
                             listener.onActualImageReceived(packet);
                         }
                     }
 
                     break;
                 case MSG_SET_IP_ADDRESS:
-                    String ip = (String)message.obj;
-                    if( mIpAddress == null || !mIpAddress.equals(ip)) {
+                    String ip = (String) message.obj;
+                    if (mIpAddress == null || !mIpAddress.equals(ip)) {
                         mIpAddress = ip;
                         mIClientConnection.onClientConnected(mIpAddress);
                     }
@@ -147,5 +168,15 @@ public class DataContainer   {
         }
     }
 
+    public List<ReceivedPacket> getmThumbnailList() {
+        return mThumbnailList;
+    }
+
+    public boolean hasKey(String filePath) {
+        byte[] pathBytes =  Base64.decode(filePath, Base64.DEFAULT);
+        String path = new String(pathBytes).trim();
+        Log.d("PPPP", "hasKey: " + path);
+        return mActualImageMap.containsKey(new String(pathBytes).trim());
+    }
 
 }

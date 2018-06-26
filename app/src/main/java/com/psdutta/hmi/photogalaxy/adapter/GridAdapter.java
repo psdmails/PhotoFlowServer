@@ -1,47 +1,27 @@
 package com.psdutta.hmi.photogalaxy.adapter;
 
-/**
- * Created by PsDutta on 007, 07/06/2018.
- */
-
-import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.psdutta.hmi.photogalaxy.R;
-import com.psdutta.hmi.photogalaxy.data.BitmapGenerator;
 import com.psdutta.hmi.photogalaxy.data.ReceivedPacket;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GridAdapter extends BaseAdapter {
+
     private final LayoutInflater inflater;
-    private Context mContext;
 
     private List<ReceivedPacket> mDataList = new ArrayList<>();
 
-    // Keep all Images in array
-    /*public Integer[] mThumbIds = {
-            R.drawable.pic_1, R.drawable.pic_2,
-            R.drawable.pic_3, R.drawable.pic_4,
-            R.drawable.pic_1, R.drawable.pic_2,
-            R.drawable.pic_3, R.drawable.pic_4,
-            R.drawable.pic_1, R.drawable.pic_2,
-            R.drawable.pic_3, R.drawable.pic_4
-
-    };
-*/
-    public GridAdapter(Context c){
-        mContext = c;
-        inflater = LayoutInflater.from(c);
+    public GridAdapter(Context context) {
+        inflater = LayoutInflater.from(context);
     }
 
     @Override
@@ -61,31 +41,33 @@ public class GridAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        View view;
+        SimpleDraweeView imageView;
+        if (convertView == null) {
+            view = inflater.inflate(R.layout.item_home, null);
+            ViewHolder viewHolder = new ViewHolder(view);
+            imageView = viewHolder.imageView;
+            view.setTag(viewHolder);
+        } else {
+            view = convertView;
+            imageView = ((ViewHolder) view.getTag()).imageView;
+        }
 
-//        if(inflater == null)
-//        {
-//            inflater = (LayoutInflater) mContext.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-//        }
-//
-//        pagerLayout = (RelativeLayout) inflater.inflate(resource, container, false);
-        ImageView imageView = new ImageView(mContext);
-        imageView.setImageBitmap(BitmapGenerator.stringToBitMap(mDataList.get(position)
-                .getEncodedBitmap()));
-
-
-        //imageView.setImageResource(mThumbIds[position]);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setLayoutParams(new GridView.LayoutParams(160, 160));
-        return imageView;
+        imageView.setImageURI(Uri.parse("http://" + mDataList.get(position).getFilePath()));
+        return view;
     }
 
+
+    private static class ViewHolder {
+        private SimpleDraweeView imageView;
+
+        ViewHolder(View view) {
+            imageView = (SimpleDraweeView) view.findViewById(R.id.image_view);
+        }
+    }
 
     public void setData(List<ReceivedPacket> datalist) {
         mDataList.addAll(datalist);
     }
 
-
-    /*public List<Integer> getAllItems() {
-        return Arrays.asList(mThumbIds);
-    }*/
 }

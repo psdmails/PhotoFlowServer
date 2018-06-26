@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
+import com.facebook.drawee.drawable.ScalingUtils;
+import com.facebook.drawee.view.DraweeTransition;
 import com.psdutta.hmi.photogalaxy.R;
 import com.psdutta.hmi.photogalaxy.connection.PhotoGalaxyManager;
 import com.psdutta.hmi.photogalaxy.data.BitmapGenerator;
@@ -27,6 +29,9 @@ public class FullScreenImageActivity extends Activity implements IOnEventReceive
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fullscreen_image);
+
+        getWindow().setSharedElementEnterTransition(DraweeTransition.createTransitionSet(ScalingUtils.ScaleType.CENTER_CROP, ScalingUtils.ScaleType.FIT_CENTER));
+        getWindow().setSharedElementReturnTransition(DraweeTransition.createTransitionSet(ScalingUtils.ScaleType.FIT_CENTER, ScalingUtils.ScaleType.CENTER_CROP));
 
         int position = getIntent().getIntExtra(Constants.EXTRA_SELECTED_IMAGE_POS, -1);
         if (position == -1) {
